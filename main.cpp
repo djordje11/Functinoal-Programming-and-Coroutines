@@ -1,17 +1,17 @@
 #include "lazy.hpp"
 #include <iostream>
 
-my_optional<int> cor1()
+std::optional<int> cor1()
 {
     std::cout << "cor1" << std::endl;
     return 1;
 }
-my_optional<int> cor2(int x)
+std::optional<int> cor2(int x)
 {
     std::cout << "cor2" << std::endl;
-    return {};
+    return 5 + x;
 }
-my_optional<int> cor()
+std::optional<int> cor()
 {
     
     int x = co_await cor1();
@@ -21,9 +21,9 @@ my_optional<int> cor()
 
 int main()
 {
-    my_optional<int> lal = cor();
-    if(lal.m_opt.has_value())
-        std::cout << lal.m_opt.value() << std::endl;
+    std::optional<int> lal = cor();
+    if(lal.has_value())
+        std::cout << lal.value() << std::endl;
     else
         std::cout << "No value" <<  std::endl;
 

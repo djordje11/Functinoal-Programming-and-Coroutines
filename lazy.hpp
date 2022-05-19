@@ -4,11 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 
-template <typename T>
-class my_optional;
 
-template <typename T>
-class optional_awaiter;
 
 template <typename T>
 class my_shared 
@@ -18,7 +14,7 @@ public:
     std::shared_ptr<bool> m_empty;
 public:
     my_shared(std::shared_ptr<T> ptr) : m_ptr(ptr), m_empty(std::make_shared<bool>(true)) {}    
-    operator my_optional<T>()
+    operator std::optional<T>()
     {
         if(!*m_empty)
             return std::make_optional<T>(*m_ptr);
@@ -27,11 +23,6 @@ public:
     void set_value(T value) {*m_ptr = value;*m_empty = false;}
 };
 
-template <typename T>
-optional_awaiter<T> operator co_await(my_optional<T> opt) noexcept
-{
-    return optional_awaiter<T>{opt.m_opt};
-}
 
 template <typename T>
 class optional_awaiter
@@ -52,20 +43,14 @@ public:
     }
 };
 
-
 template <typename T>
-class my_optional 
+optional_awaiter<T> operator co_await(std::optional<T> opt) noexcept
 {
-public:
-    std::optional<T> m_opt;
-public:
-    my_optional() : m_opt{} {}
-    my_optional(T value) : m_opt(std::make_optional<T>(value)) {} 
-    my_optional(std::optional<T> opt) : m_opt(opt) {}
-};
+    return optional_awaiter<T>{opt};
+}
 
 template <typename T, typename... Arguments>
-class std::coroutine_traits<my_optional<T>, Arguments...>
+class std::coroutine_traits<std::optional<T>, Arguments...>
 {
 public:
     struct promise_type
