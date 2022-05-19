@@ -8,6 +8,9 @@ template <typename T>
 class my_optional;
 
 template <typename T>
+class optional_awaiter;
+
+template <typename T>
 class my_shared 
 {
 public:
@@ -24,16 +27,17 @@ public:
     void set_value(T value) {*m_ptr = value;*m_empty = false;}
 };
 
+template <typename T>
+optional_awaiter<T> operator co_await(my_optional<T> opt) noexcept
+{
+    return optional_awaiter<T>{opt.m_opt};
+}
 
 template <typename T>
-class my_optional 
+class optional_awaiter
 {
 public:
     std::optional<T> m_opt;
-public:
-    my_optional() : m_opt{} {}
-    my_optional(T value) : m_opt(std::make_optional<T>(value)) {} 
-    my_optional(std::optional<T> opt) : m_opt(opt) {}
     bool await_ready() const
     {
         return m_opt.has_value(); 
@@ -46,6 +50,18 @@ public:
     {
         return m_opt.value();
     }
+};
+
+
+template <typename T>
+class my_optional 
+{
+public:
+    std::optional<T> m_opt;
+public:
+    my_optional() : m_opt{} {}
+    my_optional(T value) : m_opt(std::make_optional<T>(value)) {} 
+    my_optional(std::optional<T> opt) : m_opt(opt) {}
 };
 
 template <typename T, typename... Arguments>
