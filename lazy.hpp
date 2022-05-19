@@ -46,6 +46,12 @@ public:
     {
         return m_opt.value();
     }
+};
+
+template <typename T, typename... Arguments>
+class std::coroutine_traits<my_optional<T>, Arguments...>
+{
+public:
     struct promise_type
     {
         my_shared<T> ptr = std::make_shared<T>(); 
@@ -71,4 +77,3 @@ public:
         }
     };
 };
-
