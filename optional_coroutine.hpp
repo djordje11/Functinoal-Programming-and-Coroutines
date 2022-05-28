@@ -1,8 +1,7 @@
 #include <optional>
 #include <coroutine>
-#include <memory>
+#include <utility>
 #include <cstdlib>
-#include <iostream>
 
 
 
@@ -10,17 +9,15 @@ template <typename T>
 class my_shared 
 {
 public:
-    std::shared_ptr<T> m_ptr;
-    std::shared_ptr<bool> m_empty;
+    T*& m_ptr;
 public:
-    my_shared(std::shared_ptr<T> ptr) : m_ptr(ptr), m_empty(std::make_shared<bool>(true)) {}    
+    my_shared(T*& ptr) : m_ptr(ptr) {}    
     operator std::optional<T>()
     {
-        if(!*m_empty)
+        if(m_ptr)
             return std::make_optional<T>(*m_ptr);
         return {};
     }
-    void set_value(T value) {*m_ptr = value;*m_empty = false;}
 };
 
 
@@ -55,7 +52,7 @@ class std::coroutine_traits<std::optional<T>, Arguments...>
 public:
     struct promise_type
     {
-        my_shared<T> ptr = std::make_shared<T>(); 
+        T* ptr = nullptr;
         std::suspend_never initial_suspend()
         {
             return {};
@@ -70,7 +67,7 @@ public:
         }
         void return_value(T value)
         {
-           ptr.set_value(value); 
+            ptr = new T(std::move(value));
         }
         void unhandled_exception() 
         {
