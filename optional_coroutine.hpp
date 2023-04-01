@@ -3,23 +3,18 @@
 #include <utility>
 #include <cstdlib>
 
-
-
 template <typename T>
-class my_shared 
+class return_holder 
 {
 public:
-    T*& m_ptr;
+    std::optional<T>& m_opt;
 public:
-    my_shared(T*& ptr) : m_ptr(ptr) {}    
+    return_holder(std::optional<T>& opt) : m_opt(opt) {}    
     operator std::optional<T>()
     {
-        if(m_ptr)
-            return std::make_optional<T>(*m_ptr);
-        return {};
+        return m_opt;
     }
 };
-
 
 template <typename T>
 class optional_awaiter
@@ -52,7 +47,7 @@ class std::coroutine_traits<std::optional<T>, Arguments...>
 public:
     struct promise_type
     {
-        T* ptr = nullptr;
+        std::optional<T> m_opt;
         std::suspend_never initial_suspend()
         {
             return {};
@@ -61,13 +56,13 @@ public:
         {
             return {};
         }
-        my_shared<T> get_return_object()
+        return_holder<T> get_return_object()
         {
-            return ptr;
+            return m_opt;
         }
         void return_value(T value)
         {
-            ptr = new T(std::move(value));
+            m_opt = value;
         }
         void unhandled_exception() 
         {
